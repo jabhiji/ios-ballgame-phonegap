@@ -1,0 +1,9 @@
+This is a PhoneGap game for iPhone 4.
+
+
+                          PhoneGap
+HTML5/CSS3/JavaScript  -------------> iOS app
+
+This file should be located inside the "www" folder of the PhoneGap project.
+
+Plugins used: Accelerometer
