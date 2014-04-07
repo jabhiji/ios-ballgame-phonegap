@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <title>Ball Game</title>
+    <script src="phonegap.js"></script>
+
+    <style>
+    div {
+        width: 305px;
+    }
+    button {
+        border-radius: 10px;
+        margin: 0px 20px 0px 0px;
+        padding: 0px 0px 0px 0px;
+    }
+    </style>
+
+  </head>
+
+  <body>
+
+    <h1>HOLES</h1>
+
+    <!-- graphics window -->
+    <canvas id="canvas" width="305" height="305">
+    <p>Your browser does not support HTML5 canvas</p>
+    </canvas>
+
+    <button onclick="restart()">
+    <img src="./restartButton.png" width="150" height="65" />
+    </button>
+    
+    <!-- JavaScript code for the game --> 
+    <script src="ballInBox.js"></script>
+
+  </body>
+
+</html>
