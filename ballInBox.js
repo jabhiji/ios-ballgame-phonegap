@@ -40,7 +40,7 @@
     // location of the marble
     var x;
     var y;
-    var RAD = 15;
+    var RAD = 0.04918*xmax;
 
     // velocity of the marble
     var ux;
@@ -51,7 +51,7 @@
     var xBH = new Array(NBH);
     var yBH = new Array(NBH);
     var rBH = new Array(NBH);
-    var radiusBH = 20;
+    var radiusBH = 0.06557*xmax;
     var dtheta;
 
     // score
@@ -63,6 +63,12 @@
     // game time
     var time;
     var delta_t;
+
+    // victory
+    var victory;
+
+    // death
+    var death;
 
     // The watch id references the current `watchAcceleration`
     var watchID = null;
@@ -104,6 +110,12 @@
 
         // initial rate of rotation
         dtheta = Math.PI/10000;
+
+        // not won yet
+        victory = 0;
+
+        // not dead
+        death = 0;
     }
 
     // Start watching the acceleration
@@ -130,8 +142,7 @@
     function onSuccess(acceleration) {
 
         // update game 
-        updateGame(acceleration.x, 
-                   acceleration.y);
+        updateGame(acceleration.x, acceleration.y);
 
         // draw the instantaneous acceleration vector on screen
         drawGame();
@@ -179,24 +190,19 @@
         {
             var dis = Math.sqrt(Math.pow(x - xBH[i],2) 
                               + Math.pow(y - yBH[i],2));
-            if (dis < rBH[i] - 0.5*RAD) {
+            if (dis < rBH[i] - 0.75*RAD) 
+            {
+                death = 1;
                 lives--;
-                x = xmax-RAD;
-                y = ymax-RAD;
-                ux = 0;
-                uy = 0;
             }
         }
 
         // check if the ball makes it to the flag
-        if(x < 30 && y < 30)
+        var flagZone = 1.2*RAD;
+        if(x < flagZone && y < flagZone)
         {
+            victory = 1;
             score += 1;
-            x = xmax-RAD;
-            y = ymax-RAD;
-            ux = 0;
-            uy = 0;
-            dtheta += Math.PI/10000
         }
 
         // wall bounce conditions
@@ -258,21 +264,9 @@
         context.lineWidth = 1;
         var life = 'LIVES: ' + lives.toString();
         context.strokeStyle = 'black';
-        context.strokeText(life, 0.65*xmax, 25);
+        context.strokeText(life, xmax - 100, 25);
         context.fillStyle = 'yellow';
-        context.fillText(life, 0.65*xmax, 25);
-
-        // draw the flag 
-        context.beginPath();
-        context.moveTo(10,30);
-        context.lineTo(10,10);
-        context.lineTo(30,15);
-        context.lineTo(10,20);
-        context.fillStyle="blue";
-        context.fill();
-        context.strokeStyle = 'yellow';
-        context.lineWidth = 2;
-        context.stroke();
+        context.fillText(life, xmax - 100, 25);
 
         // draw ball 
         context.beginPath();
@@ -280,22 +274,105 @@
         context.fillStyle="yellow";
         context.fill();
 
-        // game over
-        if(lives==0) 
+        // draw the flag
+        drawFlag(RAD,1.25*RAD,0.8*RAD);
+
+        if(victory == 1)
         {
-            context.font = '30pt Arial';
-            context.lineWidth = 1;
-            context.fillStyle = 'blue';
-            context.strokeStyle = 'yellow';
-            context.fillText("GAME OVER", 30, 0.55*ymax);
-            context.strokeText("GAME OVER", 30, 0.55*ymax);
-            stopWatch();
+            victory = 0;
+            dtheta += Math.PI/10000;
+            ballReachesFlag();
         }
+
+        if(death == 1)
+        {
+            death = 0;
+            ballDies();
+        }
+    }
+
+    function gameIsOver()
+    {
+        context.font = '30pt Arial';
+        context.lineWidth = 1;
+        context.fillStyle = 'blue';
+        context.strokeStyle = 'yellow';
+        context.fillText("GAME OVER", 30, 0.55*ymax);
+        context.strokeText("GAME OVER", 30, 0.55*ymax);
+    }
+
+    function drawFlag(xs,ys,size)
+    {
+        context.beginPath();
+        context.moveTo(xs,ys);
+        context.lineTo(xs,ys - size);
+        context.lineTo(xs + 0.75*size, ys - 0.75*size);
+        context.lineTo(xs,ys-0.5*size);
+        context.fillStyle="white";
+        context.fill();
+        context.strokeStyle = 'black';
+        context.lineWidth = 2;
+        context.stroke();
     }
 
     function restart()
     {
         stopWatch();
         initializeGame();
+        startWatch();
+    }
+
+    function ballReachesFlag()
+    {
+        // draw happy ball 
+        context.beginPath();
+        context.arc(x,y,RAD,0,2*Math.PI,false);
+        context.fillStyle="yellow";
+        context.fill();
+        context.strokeStyle = 'black';
+        context.lineWidth = 2;
+        context.stroke();
+
+        // re-draw flag on top of ball
+        drawFlag(RAD,1.25*RAD,0.8*RAD);
+
+        stopWatch();
+
+        // pause for 1 second and resume game
+        delay = setTimeout(resumeGame,1000);
+    }
+
+    function ballDies()
+    {
+        // draw dead ball 
+        context.beginPath();
+        context.arc(x,y,RAD,0,2*Math.PI,false);
+        context.fillStyle="red";
+        context.fill();
+
+        // game paused
+        stopWatch();
+
+        if(lives > 0)
+        {
+            // pause for 1 second and resume game
+            delay = setTimeout(resumeGame,1000);
+        }
+        else
+        {
+            gameIsOver();
+        }
+    }
+
+    function resumeGame()
+    {
+        clearTimeout(delay);
+
+        // send ball back to starting point
+        x = xmax-RAD;
+        y = ymax-RAD;
+        ux = 0;
+        uy = 0;
+
         startWatch();
     }
