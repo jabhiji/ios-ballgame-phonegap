@@ -24,25 +24,31 @@
    OTHER DEALINGS IN THE SOFTWARE.
 ------------------------------------------------------------------------*/
 
+    // default values are for iPhone
     var canvas = document.getElementById('canvas'), 
         xmax = document.getElementById("canvas").getAttribute("width"),
         ymax = document.getElementById("canvas").getAttribute("height"),
         context = canvas.getContext('2d');
 
-    // load images
+    // change canvas size if running on iPad
+    if(screen.width > 400)
+    {
+        canvas.width = 750;
+        canvas.height = 750;
+        xmax = 750;
+        ymax = 750;
+    }
 
+    // load image
     var tableImage = new Image();
     tableImage.src = "./greenTable.png";
 
-    var flagImage = new Image();
-    flagImage.src = "./finish_flag.png";
-
-    // location of the marble
+    // location of the ball
     var x;
     var y;
     var RAD = 0.04918*xmax;
 
-    // velocity of the marble
+    // velocity of the ball
     var ux;
     var uy;
 
@@ -250,6 +256,15 @@
             context.stroke();
         }
 
+        // draw ball 
+        context.beginPath();
+        context.arc(x,y,RAD,0,2*Math.PI,false);
+        context.fillStyle="yellow";
+        context.fill();
+
+        // draw the flag
+        drawFlag(RAD,1.25*RAD,0.8*RAD);
+
         // display score
         context.font = '18pt Arial';
         context.lineWidth = 1;
@@ -267,15 +282,6 @@
         context.strokeText(life, xmax - 100, 25);
         context.fillStyle = 'yellow';
         context.fillText(life, xmax - 100, 25);
-
-        // draw ball 
-        context.beginPath();
-        context.arc(x,y,RAD,0,2*Math.PI,false);
-        context.fillStyle="yellow";
-        context.fill();
-
-        // draw the flag
-        drawFlag(RAD,1.25*RAD,0.8*RAD);
 
         if(victory == 1)
         {
