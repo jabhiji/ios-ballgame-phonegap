@@ -162,14 +162,6 @@
 
     function updateGame(ax,ay)
     {
-        // dynamics 
-        ux += -0.000025*xmax*ax;
-        uy +=  0.000025*xmax*ay;
-
-        // kinematics 
-        x += ux;
-        y += uy;
-
         // update location of black holes
         var xnew,ynew;
         for(var i = 0; i < NBH; i++)
@@ -190,12 +182,52 @@
             yBH[i] = yBH[i] + ymax/2;
         }
 
+        // force due to black hole dynamics 
+        var acc_x = 0;
+        var acc_y = 0;
+        var insideHole = 0;
+
+        for(var i = 0; i < NBH; i++)
+        {
+            var dis = Math.sqrt(Math.pow(x - xBH[i],2) 
+                              + Math.pow(y - yBH[i],2));
+
+            // non-dimensional distance
+            dis = dis/rBH[i];
+
+            // force magnitude (force is center-to-center)
+            if (dis > 0.1 && dis < 1) {
+                insideHole = 1;
+                var fBH = 0.0001*xmax/(dis*dis);
+                var COSINE = ((xBH[i] - x)/rBH[i])/dis;
+                var SINE   = ((yBH[i] - y)/rBH[i])/dis;
+
+                // force components
+                acc_x = acc_x + fBH*COSINE;
+                acc_y = acc_y + fBH*SINE;
+            }
+        }
+
+        // ball slows down slightly if inside a hole
+        if(insideHole==1) {
+            ux = 0.9*ux;
+            uy = 0.9*uy;
+        } 
+
+        // dynamics 
+        ux += -0.000025*xmax*ax + acc_x;
+        uy +=  0.000025*xmax*ay + acc_y;
+
+        // kinematics 
+        x += ux;
+        y += uy;
+
         // detect whether ball falls inside a black hole
         for(var i = 0; i < NBH; i++)
         {
             var dis = Math.sqrt(Math.pow(x - xBH[i],2) 
                               + Math.pow(y - yBH[i],2));
-            if (dis < rBH[i] - 0.75*RAD) 
+            if (dis < 0.05*rBH[i]) 
             {
                 death = 1;
                 lives--;
