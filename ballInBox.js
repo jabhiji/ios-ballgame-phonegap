@@ -46,7 +46,7 @@
     // location of the ball
     var x;
     var y;
-    var RAD = 0.04918*xmax;
+    var RAD = 0.05*xmax;
 
     // velocity of the ball
     var ux;
@@ -57,7 +57,7 @@
     var xBH = new Array(NBH);
     var yBH = new Array(NBH);
     var rBH = new Array(NBH);
-    var radiusBH = 0.06557*xmax;
+    var radiusBH = 0.06*xmax;
     var dtheta;
 
     // score
@@ -162,10 +162,9 @@
 
     function updateGame(ax,ay)
     {
-
         // dynamics 
-        ux += -0.02*ax;
-        uy +=  0.02*ay;
+        ux += -0.000025*xmax*ax;
+        uy +=  0.000025*xmax*ay;
 
         // kinematics 
         x += ux;
